@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package example;
+
+import "google/protobuf/descriptor.proto";
+
+message MyFieldOptions {
+  string my_default_value = 1;
+}
+
+extend google.protobuf.FieldOptions {
+  optional MyFieldOptions my_field_options = 70000;
+}

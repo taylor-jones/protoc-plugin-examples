@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package example;
+
+import "protos/options.proto";
+
+message Foo {
+  string version = 1 [(example.my_field_options).my_default_value = "1.2"];
+  int32 a = 2;
+  float b = 3;
+  string c = 4;
+}
