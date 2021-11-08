@@ -14,38 +14,20 @@ find_package(Protobuf REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(Threads)
 
-# ----------------------------------------------------------------------------
-# Build protoc plugins and create a list of target names and protoc args for
-# the protoc plugins.
 
-add_subdirectory(plugins)
-
-include(all_targets)
-get_all_targets(PROTOC_PLUGIN_TARGETS)
-# message("All targets: ${PROTOC_PLUGIN_TARGETS}")
-
-foreach(target ${PROTOC_PLUGIN_TARGETS})
-    get_target_property(plugin_name ${target} PROTOC_PLUGIN_NAME)
-    get_target_property(plugin_protoc_gen_name ${target} PROTOC_GEN_NAME)
-    get_target_property(plugin_path ${target} PROTOC_PLUGIN_PATH)
-
-    list(APPEND PROTOC_PLUGIN_ARGS
-        "--plugin=${plugin_name}=${plugin_path}"
-        "--${plugin_protoc_gen_name}_out=${CMAKE_CURRENT_BINARY_DIR}")
-endforeach(target ${PROTOC_PLUGIN_TARGETS})
 
 # ----------------------------------------------------------------------------
-# Generate c++ files from protos
+# Generate the "core" c++ files from protos
+# These don't use the custom protoc plugins
 
-set(PROTO_LIB_NAME "${PROJECT_NAME}-protos")
-set(PROTO_DIR "protos")
-set(PROTO_FILES
-    ${PROTO_DIR}/options.proto
-    ${PROTO_DIR}/foo.proto
-)
+set(PROTO_INTERNAL_LIB_NAME "${PROJECT_NAME}-internal-protos")
+set(PROTO_INTERNAL_DIR "protos/options")
+set(PROTO_INTERNAL_FILES ${PROTO_INTERNAL_DIR}/options.proto)
 
-foreach(proto ${PROTO_FILES})
+foreach(proto ${PROTO_INTERNAL_FILES})
     get_filename_component(PROTO_NAME "${proto}" NAME_WE)
+    get_filename_component(PROTO_DIR "${proto}" DIRECTORY)
+
     set(PROTO_HEADER "${PROTO_DIR}/${PROTO_NAME}.pb.h")
     set(PROTO_SRC    "${PROTO_DIR}/${PROTO_NAME}.pb.cc")
 
@@ -53,9 +35,7 @@ foreach(proto ${PROTO_FILES})
         string(CONCAT cmd
             "protoc -I ${CMAKE_CURRENT_SOURCE_DIR} "
             "${CMAKE_CURRENT_SOURCE_DIR}/${proto} "
-            "--cpp_out=${CMAKE_CURRENT_BINARY_DIR} "
-            "${PROTOC_PLUGIN_ARGS}"
-        )
+            "--cpp_out=${CMAKE_CURRENT_BINARY_DIR}")
         message(STATUS "${cmd}")
     endif()
 
@@ -66,29 +46,118 @@ foreach(proto ${PROTO_FILES})
         ARGS -I ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}/${proto}
             --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
-            ${PROTOC_PLUGIN_ARGS}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${proto}" ${PROTOC_PLUGIN_TARGETS}
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${PROTO_INTERNAL_DIR}"
         COMMENT "${proto} -> ${PROTO_SRC} ${PROTO_HEADER}"
     )
 
-    list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_SRC}")
-    list(APPEND HEADERS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}")
+    list(APPEND INTERNAL_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_SRC}")
+    list(APPEND INTERNAL_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}")
 endforeach()
 
-add_library(${PROTO_LIB_NAME} STATIC ${SOURCES} ${HEADERS})
+add_library(${PROTO_INTERNAL_LIB_NAME} STATIC ${INTERNAL_SOURCES} ${INTERNAL_HEADERS})
 
-target_compile_options(${PROTO_LIB_NAME} PRIVATE -std=c++11)
+target_compile_options(${PROTO_INTERNAL_LIB_NAME} PRIVATE -std=c++11)
 
-target_link_libraries(${PROTO_LIB_NAME} PRIVATE
+target_link_libraries(${PROTO_INTERNAL_LIB_NAME} PRIVATE
     ${Protobuf_LIBRARIES} ${Protobuf_PROTOC_LIBRARIES})
 
-target_include_directories(${PROTO_LIB_NAME} PUBLIC
+target_include_directories(${PROTO_INTERNAL_LIB_NAME} PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR} ${Protobuf_INCLUDE_DIR})
 
-install(TARGETS ${PROTO_LIB_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS ${PROTO_INTERNAL_LIB_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+
+
+# ----------------------------------------------------------------------------
+# Build protoc plugins and create a list of target names and protoc args for
+# the protoc plugins.
+
+add_subdirectory(plugins)
+
+include(all_targets)
+get_all_targets(PROTOC_PLUGIN_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/plugins)
+message(STATUS "PROTOC_PLUGIN_TARGETS: ${PROTOC_PLUGIN_TARGETS}")
+
+foreach(target ${PROTOC_PLUGIN_TARGETS})
+    get_target_property(plugin_name ${target} PROTOC_PLUGIN_NAME)
+    get_target_property(plugin_protoc_gen_name ${target} PROTOC_GEN_NAME)
+    get_target_property(plugin_path ${target} PROTOC_PLUGIN_PATH)
+
+    message(STATUS "plugin_name: ${plugin_name}")
+    message(STATUS "protoc_plugin_gen_name: ${protoc_plugin_gen_name}")
+    message(STATUS "plugin_path: ${plugin_path}")
+
+    list(APPEND PROTOC_PLUGIN_ARGS
+        "--plugin=${plugin_name}=${plugin_path}"
+        "--${plugin_protoc_gen_name}_out=${CMAKE_CURRENT_BINARY_DIR}")
+endforeach(target ${PROTOC_PLUGIN_TARGETS})
+
+
+
+
+# ----------------------------------------------------------------------------
+# Generate the "api" c++ files from protos
+# These use the custom protoc plugins
+
+set(PROTO_API_LIB_NAME "${PROJECT_NAME}-api-protos")
+set(PROTO_API_DIR "protos/api")
+set(PROTO_API_FILES ${PROTO_API_DIR}/foo.proto)
+
+foreach(proto ${PROTO_API_FILES})
+    get_filename_component(PROTO_NAME "${proto}" NAME_WE)
+    get_filename_component(PROTO_DIR "${proto}" DIRECTORY)
+
+    set(PROTO_HEADER "${PROTO_DIR}/${PROTO_NAME}.pb.h")
+    set(PROTO_SRC    "${PROTO_DIR}/${PROTO_NAME}.pb.cc")
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        string(CONCAT cmd
+            "protoc -I ${CMAKE_CURRENT_SOURCE_DIR} "
+            "${CMAKE_CURRENT_SOURCE_DIR}/${proto} "
+            "--cpp_out=${CMAKE_CURRENT_BINARY_DIR} "
+            "${PROTO_INTERNAL_FILES} "
+            "${PROTOC_PLUGIN_ARGS}")
+        message(STATUS "${cmd}")
+    endif()
+
+    add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_SRC}"
+                "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}"
+        COMMAND LIBRARY_PATH=${Protobuf_LIBRARY} ${Protobuf_PROTOC_EXECUTABLE}
+        ARGS -I ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/${proto}
+            --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
+            ${PROTO_INTERNAL_FILES}
+            ${PROTOC_PLUGIN_ARGS}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${PROTO_API_DIR}" ${PROTOC_PLUGIN_TARGETS}
+        COMMENT "${proto} -> ${PROTO_SRC} ${PROTO_HEADER}"
+    )
+
+    list(APPEND API_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_SRC}")
+    list(APPEND API_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}")
+endforeach()
+
+add_library(${PROTO_API_LIB_NAME} STATIC ${API_SOURCES} ${API_HEADERS})
+
+target_compile_options(${PROTO_API_LIB_NAME} PRIVATE -std=c++11)
+
+target_link_libraries(${PROTO_API_LIB_NAME}
+    PUBLIC
+        ${PROTO_INTERNAL_LIB_NAME}
+    PRIVATE
+        ${Protobuf_LIBRARIES}
+        ${Protobuf_PROTOC_LIBRARIES}
+    )
+
+target_include_directories(${PROTO_API_LIB_NAME} PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR} ${Protobuf_INCLUDE_DIR})
+
+install(TARGETS ${PROTO_API_LIB_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 
 
 # -----------------------------------------------------------

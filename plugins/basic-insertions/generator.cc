@@ -112,6 +112,9 @@ bool Generator::GenerateFor(
   auto hh_filename = StripProto(file->name()) + ".pb.h";
   auto cc_filename = StripProto(file->name()) + ".pb.cc";
 
+  std::cerr << "hh_filename: " << hh_filename << "\n";
+  std::cerr << "cc_filename: " << cc_filename << "\n";
+
   // ---------------------------------------------------------------------
   // Insert print statements into each of the insertion points so that it's
   // clear when these insertion points are relevant.

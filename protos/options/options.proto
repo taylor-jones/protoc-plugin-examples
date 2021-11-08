@@ -1,13 +1,15 @@
 syntax = "proto3";
 
-package example;
+package project.options;
 
 import "google/protobuf/descriptor.proto";
 
-message CustomFieldOptions {
+option cc_enable_arenas = true;
+
+message FieldOptions {
   string default_value = 1;
 }
 
 extend google.protobuf.FieldOptions {
-  optional CustomFieldOptions field_options = 51234;
+  optional FieldOptions field_options = 51234;
 }

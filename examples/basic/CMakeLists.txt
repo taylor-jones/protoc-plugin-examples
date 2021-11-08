@@ -7,7 +7,8 @@ add_executable(${BINARY_NAME}
 target_link_libraries(${BINARY_NAME}
     PUBLIC
         ${Protobuf_LIBRARIES}
-        ${PROTO_LIB_NAME}
+        ${PROTO_INTERNAL_LIB_NAME}
+        ${PROTO_API_LIB_NAME}
 )
 
 install(TARGETS ${BINARY_NAME}

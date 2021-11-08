@@ -6,12 +6,16 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/reflection.h>
 #include <google/protobuf/io/printer.h>
+
+#include <protos/options/options.pb.h>
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 
 template <typename T>
@@ -201,22 +205,140 @@ bool Generator::GenerateFor(
   std::cerr << "\n========================================================\n";
 
   std::cerr << message->full_name() << " has " << message->field_count() << " fields\n";
-  for (auto i = 0; i < message->field_count(); ++i) {
-    std::cerr << message->field(i)->DebugString() << "\n";
-    PrintField(message->field(i));
-  }
+
+  //
+  // Field Options
+  //
+  // for (auto i = 0; i < message->field_count(); ++i) {
+  //   auto* field = message->field(i);
+  //   std::cerr << field->DebugString() << "\n";
+
+  //   auto core_opts = field->options();
+  //   auto* core_opts_desc = core_opts.descriptor();
+
+  //   std::cerr << "CORE FIELD OPTS:\n" << core_opts.DebugString() << "\n\n";
+
+  //   // auto has_opts = core_opts.internal_default_instance()->HasExtension(project::options::field_options);
+
+  //   // if (core_opts_desc != nullptr && core_opts_desc->)
+
+  //   // auto core_field_options = field->options();
+
+  //   // auto ext = field->options().default_instance().GetExtension(project::options::field_options);
+  
+
+  //   // auto opt_ext_count = core_opts_desc->extension_count();
+  //   // std::cerr << "\t* " << opt_ext_count << " option extensions\n";
+  //   // for (auto j = 0; j < opt_ext_count; ++j) {
+  //   //   auto* ext = core_opts_desc->extension(j);
+  //   //   std::cerr << "\t\t" << ext->name() << "\n";
+  //   // }
+
+  //   // auto ext_num = project::options::kFieldOptionsFieldNumber;
+  //   // auto* ext = core_field_options.descriptor()->FindExtensionRangeContainingNumber(ext_num);
+
+  //   // auto* ext = core_field_options.GetExtension(ext_num);
+
+  //   // if (ext != nullptr) {
+  //   //   std::cerr << "Found ext | " ;
+  //   // }
+  //   // std::cerr << "CORE FIELD OPTIONS:\n" << core_field_options.DebugString() << "\n";
+
+  //   // auto def = core_field_options.GetExtension(project::options::field_options).default_value();
+
+  //   // if (has_opts) {
+  //   // if (core_field_options.HasExtension(project::options::field_options)) {
+  //     // auto custom_field_options = core_field_options.GetExtension(project::options::field_options);
+  //     // std::cerr << "CUSTOM FIELD OPTIONS:\n" << custom_field_options.DebugString() << "\n";
+  //   //   std::cerr << "has custom field opts";
+  //   // }
+
+  //   PrintField(message->field(i));
+  // }
 
   // ======================================================================
 
   // Checks for the existence of a "version" field on the message. If found,
   // inserts code to set the version to the default version whenever the
   // message is initialized.
-  if (message->FindFieldByName("version")) {
-    printer.Print("\nauto* version_desc = descriptor()->FindFieldByName(\"version\");\n");
-    printer.Print("auto version_opts = version_desc->options();\n");
-    printer.Print("auto version_default = version_opts.GetExtension(example::field_options).default_value();\n");
-    printer.Print("set_version(version_default);\n");
+  // if (message->FindFieldByName("version")) {
+  //   printer.Print("\nauto* version_desc = descriptor()->FindFieldByName(\"version\");\n");
+  //   printer.Print("auto version_opts = version_desc->options();\n");
+  //   printer.Print("auto version_default = version_opts.GetExtension(project::options::field_options).default_value();\n");
+  //   printer.Print("set_version(version_default);\n");
+  // }
+
+  if (message->options().GetReflection()->FindKnownExtensionByNumber(project::options::kFieldOptionsFieldNumber) != nullptr) {
+    std::cerr << message->full_name() << " HAS CUSTOM OPTS!!\n";
   }
+
+
+  for (auto i = 0; i < message->field_count(); ++i) {
+    auto* field = message->field(i);
+    std::cerr << field->options().DebugString() << "\n";
+
+
+
+    // project::options::field_options.Register(project::options::kFieldOptionsFieldNumber);
+    // auto x = project::options::field_options.default_value();
+
+
+    // field->options().CheckInitialized();
+    if (!field->options().IsInitialized()) {
+      auto ext = field->options().GetExtension(project::options::field_options);
+    }
+
+
+    // auto x = field->options().IsInitialized();
+    // if (ext) {
+    //   std::cerr << "EXT IS INITIALIZED\n";
+    // }
+
+    // auto y = field->options().default_instance();
+
+    // for (auto j = 0; j < field->options().GetDescriptor()->extension_count(); ++j) {
+    //   auto ext = field->options().GetDescriptor()->extension(j);
+    //   std::cerr << ext->DebugString() << "\n";
+    // }
+
+    // auto* ext = field->options().GetReflection()->FindKnownExtensionByNumber(project::options::kFieldOptionsFieldNumber);
+
+    // auto* opts = field->options().descriptor()->FindFieldByNumber(project::options::kFieldOptionsFieldNumber);
+    // auto* opts = field->options().descriptor()->FindExtensionByName("project.options.field_options");
+
+    // if (field->options().descriptor()->IsExtensionNumber(project::options::kFieldOptionsFieldNumber)) {
+    //   std::cerr << field->full_name() << " HAS CUSTOM OPTS!!!!\n";
+    // }
+
+    // if (ext != nullptr) {
+    //   std::cerr << field->full_name() << " HAS CUSTOM OPTS!!!!\n";
+    // }
+
+    // printer.Print("auto* field = descriptor()->field(i);\n");
+    // printer.Print("auto field_base_opts = field->options();\n");
+    // printer.Print("if (field_base_opts.HasExtension(project::options::field_options)) {\n");
+    // printer.Print("  auto extended_opts = field_base_opts.GetExtension(project::options::field_options);\n");
+    // printer.Print("  auto field_default = extended_opts.default_value();\n");
+    // printer.Print("  set_$name$(field_default);\n", "name", field->name().c_str());
+    // printer.Print("}\n");
+  }
+
+  // printer.Print("\nfor (auto i = 0; i < descriptor()->field_count(); ++i) {\n");
+  // printer.Print("  auto* field = descriptor()->field(i);\n");
+  // printer.Print("  auto field_base_opts = field->options();\n");
+  // printer.Print("  if (field_base_opts.HasExtension(project::options::field_options)) {\n");
+  // printer.Print("    auto extended_opts = field_base_opts.GetExtension(project::options::field_options);\n");
+  // printer.Print("    auto field_default = extended_opts.default_value();\n");
+  // printer.Print("    set_version(field_default);\n");
+  // printer.Print("  }\n");
+  // printer.Print("}\n\n");
+
+  // if (message->FindFieldByName("version")) {
+  //   printer.Print("\nauto* version_desc = descriptor()->FindFieldByName(\"version\");\n");
+  //   printer.Print("auto version_opts = version_desc->options();\n");
+  //   printer.Print("auto version_default = version_opts.GetExtension(project::options::field_options).default_value();\n");
+  //   printer.Print("set_version(version_default);\n");
+  // }
 
 
 

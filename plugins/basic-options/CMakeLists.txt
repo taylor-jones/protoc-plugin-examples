@@ -3,10 +3,6 @@ set(PLUGIN_TARGET_NAME "protoc-gen-${PLUGIN_PROTOC_GEN_NAME}")
 
 message(STATUS "Adding ${PLUGIN_TARGET_NAME}")
 
-find_package(Protobuf REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
-find_package(Threads)
-
 add_executable(${PLUGIN_TARGET_NAME}
     generator.cc
     main.cc
@@ -30,6 +26,8 @@ target_compile_options(${PLUGIN_TARGET_NAME}
 )
 
 target_link_libraries(${PLUGIN_TARGET_NAME}
+    PUBLIC
+        ${PROTO_INTERNAL_LIB_NAME}
     PRIVATE
         ${Protobuf_PROTOC_LIBRARIES}
         ${Protobuf_LIBRARIES}

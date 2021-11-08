@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package project.api;
+
+import "protos/options/options.proto";
+
+option cc_enable_arenas = true;
+
+message Foo {
+  string version = 1 [(project.options.field_options).default_value = "1.2"];
+  int32 a = 2;
+  float b = 3;
+  string c = 4;
+}
+
+message Bar {
+  string color = 1;
+  int32 size = 2;
+}
