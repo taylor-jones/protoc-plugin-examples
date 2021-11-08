@@ -4,6 +4,8 @@
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/io/printer.h>
 
 #include <memory>
@@ -82,6 +84,66 @@ std::shared_ptr<google::protobuf::io::Printer> GetPrinter(
 }
 
 
+void PrintField(const google::protobuf::FieldDescriptor* field) {
+  std::cerr << "\n-------------------------------------------------------\n";
+  std::cerr << "FIELD: " << field->full_name();
+  std::cerr << "\n-------------------------------------------------------\n";
+
+  // std::cerr << field->DebugString() << "\n";
+  // std::cerr << "\t* is_extension? " << field->is_extension() << "\n";
+  // std::cerr << "\t* is_repeated? " << field->is_repeated() << "\n";
+  // std::cerr << "\t* is_map? " << field->is_map() << "\n";
+
+  //
+  // Field Options
+  //
+  auto opts = field->options();
+  auto* opts_desc = opts.GetDescriptor();
+  std::cerr << "\t* Field Options\n";
+  std::cerr << opts.DebugString() << "\n";
+
+  //
+  // UNINTERPRETED OPTIONS
+  //
+  auto num_uninterpreted = opts.uninterpreted_option_size();
+  std::cerr << "\t* " << num_uninterpreted << " uninterpreted options\n";
+  for (auto k = 0; k < num_uninterpreted; ++k) {
+    auto uo = opts.uninterpreted_option(k);
+    std::cerr << "\t\t" << uo.DebugString() << "\n";
+  }
+
+  //
+  // OPTION FIELDS
+  //
+  auto opt_field_count = opts_desc->field_count();
+  std::cerr << "\t* " << opt_field_count << " option fields\n";
+  for (auto j = 0; j < opt_field_count; ++j) {
+    auto* opt_fld = opts_desc->field(j);
+    std::cerr << "\t\t" << opt_fld->name() << "\n";
+  }
+
+  //
+  // OPTION ENUMS
+  //
+  auto opt_enum_count = opts_desc->enum_type_count();
+  std::cerr << "\t* " << opt_enum_count << " option enum types\n";
+  for (auto j = 0; j < opt_enum_count; ++j) {
+    auto* et = opts_desc->enum_type(j);
+    std::cerr << "\t\t" << et->name() << "\n";
+  }
+
+  //
+  // OPTION EXTENSIONS
+  //
+  auto opt_ext_count = opts_desc->extension_count();
+  std::cerr << "\t* " << opt_ext_count << " option extensions\n";
+  for (auto j = 0; j < opt_ext_count; ++j) {
+    auto* ext = opts_desc->extension(j);
+    std::cerr << "\t\t" << ext->name() << "\n";
+  }
+}
+
+
 bool Generator::GenerateFor(
     const google::protobuf::Descriptor* message,
     const google::protobuf::FileDescriptor* file,
@@ -129,33 +191,33 @@ bool Generator::GenerateFor(
   auto hh_filename = StripProto(file->name()) + ".pb.h";
   auto cc_filename = StripProto(file->name()) + ".pb.cc";
 
-  // ---------------------------------------------------------------------
+  auto arena_constructor_inserter =
+      GetInserter(cc_filename, "arena_constructor", context, message);
 
-  auto includes_printer = GetPrinter(cc_filename, "includes", context);
-  includes_printer->Print("#include <iostream>");
+  google::protobuf::io::Printer printer(arena_constructor_inserter, '$');
 
-  // ---------------------------------------------------------------------
-  // Insert print statements into each of the insertion points so that it's
-  // clear when these insertion points are relevant.
+  std::cerr << "\n========================================================\n";
+  std::cerr << "MESSAGE: " << message->full_name();
+  std::cerr << "\n========================================================\n";
 
-  auto msg_name = message->full_name();
-  auto printer = GetPrinter(cc_filename, "arena_constructor", context, message);
-  auto raw = "std::cout << \"@@arena_constructor:" + msg_name + "\\n\";\n";
-  printer->Print(raw.c_str());
+  std::cerr << message->full_name() << " has " << message->field_count() << " fields\n";
+  for (auto i = 0; i < message->field_count(); ++i) {
+    std::cerr << message->field(i)->DebugString() << "\n";
+    PrintField(message->field(i));
+  }
 
-  // ------------------
+  // ======================================================================
 
-  msg_name = message->full_name();
-  printer = GetPrinter(cc_filename, "copy_constructor", context, message);
-  raw = "std::cout << \"@@copy_constructor:" + msg_name + "\\n\";\n";
-  printer->Print(raw.c_str());
+  // Checks for the existence of a "version" field on the message. If found,
+  // inserts code to set the version to the default version whenever the
+  // message is initialized.
+  if (message->FindFieldByName("version")) {
+    printer.Print("\nauto* version_desc = descriptor()->FindFieldByName(\"version\");\n");
+    printer.Print("auto version_opts = version_desc->options();\n");
+    printer.Print("auto version_default = version_opts.GetExtension(example::field_options).default_value();\n");
+    printer.Print("set_version(version_default);\n");
+  }
 
-  // p->Print("\nauto* version_desc = descriptor()->FindFieldByName(\"version\");\n");
-  // p->Print("if (version_desc != nullptr) {\n");
-  // p->Print("  auto version_opts = version_desc->options();\n");
-  // p->Print("  auto version_default = version_opts.GetExtension(example::my_field_options).my_default_value();\n");
-  // p->Print("  version_ = version_default;\n");
-  // p->Print("}\n");
 
 
   // auto arena_constructor_inserter = context->OpenForInsert(
@@ -239,43 +301,12 @@ bool Generator::Generate(const google::protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          google::protobuf::compiler::GeneratorContext* context,
                          std::string* error) const {
-   // -----------------------------------------------------------------------
-   // Process context for debgugging purposes
-   // -----------------------------------------------------------------------
-  auto basename = google::protobuf::compiler::StripProto(file->name());
-
-  // NOTE: must use stderr because of the way protobuf reads from stdout
-  std::cerr << "file->name(): " << file->name() << "\n";
-  std::cerr << "basename: " << basename << "\n";
-  std::cerr << "parameter: " << parameter << "\n";
-
-  // This is empty. This can be set by us if we encounter an issue. If set,
-  // it'll cause the build to fail and will print the error.
-  // NOTE: must dereference to set value, like: *error = "my error";
-  std::cerr << "error: " << *error << "\n";
-
-  // Check for input options? Print if any are found.
-  std::vector<std::pair<std::string, std::string> > options;
-  google::protobuf::compiler::ParseGeneratorParameter(parameter, &options);
-
-  if (options.size()) {
-    std::cerr << "\n------------- PARSED OPTIONS ----------------\n";
-    for (auto& opt : options) {
-      std::cerr << opt.first << ": " << opt.second << "\n";
-    }
-    std::cerr << "\n------------- END PARSED OPTIONS ----------------\n";
-  }
-
-  // NOTE: GeneratorContext is used to produce output from this plugin.
-  // See google::protobuf::compiler::code_generator.h
-
-   // -----------------------------------------------------------------------
-   // Begin processing messages from the input file descriptor
-   // -----------------------------------------------------------------------
-
   // Generate for each message. Short circuit on any failures.
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (!GenerateFor(file->message_type(i), file, context)) {
+      auto* msg = file->message_type(i);
+      std::cerr << "Failed to generate for message " << msg->full_name()
+                << ". Exiting...\n";
       return false;
     }
   }

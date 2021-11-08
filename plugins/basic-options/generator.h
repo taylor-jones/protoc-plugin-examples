@@ -1,5 +1,5 @@
-#ifndef MYAPP_PLUGIN_GENERATOR
-#define MYAPP_PLUGIN_GENERATOR
+#ifndef MYAPP_BASIC_OPTIONS_GENERATOR
+#define MYAPP_BASIC_OPTIONS_GENERATOR
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
@@ -31,4 +31,4 @@ class Generator : public google::protobuf::compiler::CodeGenerator {
   std::string convert_unscoped(const T* message) const;
 };
 
-#endif  // MYAPP_PLUGIN_GENERATOR
+#endif // MYAPP_BASIC_OPTIONS_GENERATOR

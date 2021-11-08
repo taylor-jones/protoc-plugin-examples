@@ -1,4 +1,4 @@
-set(PLUGIN_PROTOC_GEN_NAME "example")
+set(PLUGIN_PROTOC_GEN_NAME "basic-options")
 set(PLUGIN_TARGET_NAME "protoc-gen-${PLUGIN_PROTOC_GEN_NAME}")
 
 message(STATUS "Adding ${PLUGIN_TARGET_NAME}")
@@ -25,7 +25,7 @@ target_include_directories(${PLUGIN_TARGET_NAME}
 
 target_compile_options(${PLUGIN_TARGET_NAME}
     PRIVATE
-        -Wall -Wextra -Wshadow -Wconversion
+        -Wall -Wextra -Wshadow -Wno-unused-parameter
         -fdiagnostics-color=always
 )
 

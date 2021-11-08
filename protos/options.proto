@@ -4,10 +4,10 @@ package example;
 
 import "google/protobuf/descriptor.proto";
 
-message MyFieldOptions {
-  string my_default_value = 1;
+message CustomFieldOptions {
+  string default_value = 1;
 }
 
 extend google.protobuf.FieldOptions {
-  optional MyFieldOptions my_field_options = 70000;
+  optional CustomFieldOptions field_options = 51234;
 }
