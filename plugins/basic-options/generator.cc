@@ -236,7 +236,7 @@ bool Generator::GenerateFor(
     //
     // FieldDefault
     //
-    const auto* def = &fopt->GetExtension(myproj::DEF);
+    const auto* def = &fopt->GetExtension(myproj::field_default);
 
     if (def != nullptr && def->IsInitialized()) {
       std::string value;
