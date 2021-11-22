@@ -1,15 +1,63 @@
 syntax = "proto3";
 
-package project.options;
+package myproj;
 
+import "google/protobuf/any.proto";
+import "google/protobuf/api.proto";
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/type.proto";
+import "google/protobuf/wrappers.proto";
 
-option cc_enable_arenas = true;
+// option cc_enable_arenas = true;
+
+message MessageOptions {
+  string baz = 1;
+}
+
+extend google.protobuf.MessageOptions {
+  optional myproj.MessageOptions message_options = 51234;
+}
 
 message FieldOptions {
   string default_value = 1;
+  // google.protobuf.Value default_value = 1;
 }
 
+// message FieldDefault {
+//   oneof kind {
+//     // Scalar Field Types
+//     float    float    = 1;
+//     double   double   = 2;
+//     int32    int32    = 3;
+//     int64    int64    = 4;
+//     uint32   uint32   = 5;
+//     uint64   uint64   = 6;
+//     sint32   sint32   = 7;
+//     sint64   sint64   = 8;
+//     fixed32  fixed32  = 9;
+//     fixed64  fixed64  = 10;
+//     sfixed32 sfixed32 = 11;
+//     sfixed64 sfixed64 = 12;
+//     bool     bool     = 13;
+//     string   string   = 14;
+//     bytes    bytes    = 15;
+
+//     // Complex Field Types
+//     // enum     enum     = 16;
+//     // RepeatedRules repeated = 18;
+//     // MapRules      map      = 19;
+
+//     // // Well-Known Field Types
+//     // AnyRules       any       = 20;
+//     // DurationRules  duration  = 21;
+//     // TimestampRules timestamp = 22;
+// }
+// }
+
 extend google.protobuf.FieldOptions {
-  optional FieldOptions field_options = 51234;
+  optional myproj.FieldOptions CFO = 51234;
+  optional google.protobuf.Value DEF = 51235;
 }

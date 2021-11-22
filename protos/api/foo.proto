@@ -1,16 +1,20 @@
 syntax = "proto3";
 
-package project.api;
+package myproj.api;
 
 import "protos/options/options.proto";
 
-option cc_enable_arenas = true;
+// option cc_enable_arenas = true;
 
 message Foo {
-  string version = 1 [(project.options.field_options).default_value = "1.2"];
+  string version = 1 [(myproj.CFO).default_value = "1.2"];
+  float version_num = 11 [(myproj.CFO).default_value = "5.3"];
   int32 a = 2;
   float b = 3;
   string c = 4;
+  string my_string = 5 [(myproj.DEF).string_value = "21.6"];
+  int32 my_int = 6 [(myproj.DEF).number_value = 5];
+  float my_float = 7 [(myproj.DEF).number_value = 7.34];
 }
 
 message Bar {
