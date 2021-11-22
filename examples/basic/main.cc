@@ -29,8 +29,10 @@ void PrintMessageInfo(const google::protobuf::Message& message) {
 
 int main(int argc, char** argv) {
   myproj::api::Foo foo;
+  myproj::api::Bar bar;
 
   PrintMessageInfo(foo);
+  PrintMessageInfo(bar);
 
   return 0;
 }

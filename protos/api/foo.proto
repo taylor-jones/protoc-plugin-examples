@@ -6,17 +6,22 @@ import "protos/options/options.proto";
 
 
 message Foo {
-  string version = 1 [(myproj.CFO).default_value = "1.2"];
-  float version_num = 11 [(myproj.CFO).default_value = "5.3"];
-  int32 a = 2;
-  float b = 3;
-  string c = 4;
+  string version = 1 [(myproj.field_default).string_value = "1.2"];
+  float version_num = 2 [(myproj.field_default).number_value = 5.3];
+
   string my_string = 5 [(myproj.field_default).string_value = "21.6"];
   int32 my_int = 6 [(myproj.field_default).number_value = 5];
   float my_float = 7 [(myproj.field_default).number_value = 7.34];
 }
 
+enum Color {
+  UNDEFINED = 0;
+  RED = 1;
+  BLUE = 2;
+  YELLOW = 3;
+}
+
 message Bar {
-  string color = 1;
-  int32 size = 2;
+  Color color = 1 [(myproj.field_default).number_value = 2];
+  int32 size = 2 [(myproj.field_default).number_value = 4];
 }

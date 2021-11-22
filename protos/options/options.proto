@@ -5,21 +5,6 @@ package myproj;
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/struct.proto";
 
-
-message MessageOptions {
-  string baz = 1;
-}
-
-extend google.protobuf.MessageOptions {
-  optional myproj.MessageOptions message_options = 51234;
-}
-
-message FieldOptions {
-  string default_value = 1;
-}
-
-
 extend google.protobuf.FieldOptions {
-  optional myproj.FieldOptions CFO = 51234;
-  optional google.protobuf.Value field_default = 51235;
+  optional google.protobuf.Value field_default = 50001;
 }
