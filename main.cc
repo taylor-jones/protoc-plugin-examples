@@ -5,7 +5,7 @@
 #include <string>
 
 /**
- * This is a simple app that prints the destrcutor and initial values of
+ * This is a simple app that prints the descriptor and initial values of
  * C++ classes generated via protoc (including any plugins in this project).
  * The purpose of this app is to show a proof-of-concept that the default
  * values for generated fields can be set within the generated C++ code

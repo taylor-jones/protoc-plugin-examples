@@ -1,7 +1,5 @@
-set(PLUGIN_PROTOC_GEN_NAME "basic-insertions")
+set(PLUGIN_PROTOC_GEN_NAME "defaults")
 set(PLUGIN_TARGET_NAME "protoc-gen-${PLUGIN_PROTOC_GEN_NAME}")
-
-message(STATUS "Adding ${PLUGIN_TARGET_NAME}")
 
 add_executable(${PLUGIN_TARGET_NAME}
     generator.cc
@@ -22,11 +20,13 @@ target_include_directories(${PLUGIN_TARGET_NAME}
 
 target_compile_options(${PLUGIN_TARGET_NAME}
     PRIVATE
-        -Wall -Wextra -Wshadow -Wconversion
+        -Wall -Wextra -Wshadow -Wno-unused-parameter
         -fdiagnostics-color=always
 )
 
 target_link_libraries(${PLUGIN_TARGET_NAME}
+    PUBLIC
+        ${PROTO_INTERNAL_LIB_NAME}
     PRIVATE
         ${Protobuf_PROTOC_LIBRARIES}
         ${Protobuf_LIBRARIES}

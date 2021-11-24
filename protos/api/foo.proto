@@ -5,15 +5,6 @@ package myproj.api;
 import "protos/options/options.proto";
 
 
-message Foo {
-  string version = 1 [(myproj.field_default).string_value = "1.2"];
-  float version_num = 2 [(myproj.field_default).number_value = 5.3];
-
-  string my_string = 5 [(myproj.field_default).string_value = "21.6"];
-  int32 my_int = 6 [(myproj.field_default).number_value = 5];
-  float my_float = 7 [(myproj.field_default).number_value = 7.34];
-}
-
 enum Color {
   UNDEFINED = 0;
   RED = 1;
@@ -22,6 +13,21 @@ enum Color {
 }
 
 message Bar {
-  Color color = 1 [(myproj.field_default).number_value = 2];
   int32 size = 2 [(myproj.field_default).number_value = 4];
+}
+
+message Foo {
+  // examples of fields specifying a default value
+  string  version       = 1 [(myproj.field_default).string_value = "1.2"];
+  float   version_num   = 2 [(myproj.field_default).number_value = 5.3];
+  string  my_string     = 3 [(myproj.field_default).string_value = "21.6"];
+  int32   my_int        = 4 [(myproj.field_default).number_value = 5];
+  float   my_float      = 5 [(myproj.field_default).number_value = 7.34];
+  Color   my_color      = 6 [(myproj.field_default).number_value = 2];
+
+  // examples of fields in the same message not specifying a default value
+  string  a             = 7;
+  int32   b             = 8;
+  float   c             = 9;
+  Bar     Bar           = 10;
 }

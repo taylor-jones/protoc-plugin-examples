@@ -1,14 +1,11 @@
 project("protoc-plugin-examples")
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.11)
 
 include(FindProtobuf)
 include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_MODULE_PATH
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Protobuf REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
@@ -45,30 +42,23 @@ foreach(proto ${PROTO_INTERNAL_FILES})
     list(APPEND INTERNAL_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}")
 endforeach()
 
-add_library(${PROTO_INTERNAL_LIB_NAME}
-    STATIC
-        ${INTERNAL_SOURCES}
-        ${INTERNAL_HEADERS}
-)
+add_library(${PROTO_INTERNAL_LIB_NAME} STATIC
+    ${INTERNAL_SOURCES}
+    ${INTERNAL_HEADERS})
 
-target_link_libraries(${PROTO_INTERNAL_LIB_NAME}
-    PRIVATE
-        ${Protobuf_LIBRARIES}
-        ${Protobuf_PROTOC_LIBRARIES}
-)
+target_link_libraries(${PROTO_INTERNAL_LIB_NAME} PRIVATE
+    ${Protobuf_LIBRARIES}
+    ${Protobuf_PROTOC_LIBRARIES})
 
-target_include_directories(${PROTO_INTERNAL_LIB_NAME}
-    PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${Protobuf_INCLUDE_DIR}
-)
+target_include_directories(${PROTO_INTERNAL_LIB_NAME} PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Protobuf_INCLUDE_DIR})
 
 install(TARGETS ${PROTO_INTERNAL_LIB_NAME}
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 
 # ----------------------------------------------------------------------------
 # Build protoc plugins and create a list of target names and protoc args for
@@ -78,16 +68,11 @@ add_subdirectory(plugins)
 
 include(all_targets)
 get_all_targets(PROTOC_PLUGIN_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/plugins)
-message(STATUS "PROTOC_PLUGIN_TARGETS: ${PROTOC_PLUGIN_TARGETS}")
 
 foreach(target ${PROTOC_PLUGIN_TARGETS})
     get_target_property(plugin_name ${target} PROTOC_PLUGIN_NAME)
     get_target_property(plugin_protoc_gen_name ${target} PROTOC_GEN_NAME)
     get_target_property(plugin_path ${target} PROTOC_PLUGIN_PATH)
-
-    message(STATUS "plugin_name: ${plugin_name}")
-    message(STATUS "protoc_plugin_gen_name: ${protoc_plugin_gen_name}")
-    message(STATUS "plugin_path: ${plugin_path}")
 
     list(APPEND PROTOC_PLUGIN_ARGS
         "--plugin=${plugin_name}=${plugin_path}"
@@ -127,31 +112,40 @@ foreach(proto ${PROTO_API_FILES})
     list(APPEND API_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/${PROTO_HEADER}")
 endforeach()
 
-add_library(${PROTO_API_LIB_NAME}
-    STATIC
-        ${API_SOURCES}
-        ${API_HEADERS}
-)
+add_library(${PROTO_API_LIB_NAME} STATIC
+    ${API_SOURCES}
+    ${API_HEADERS})
 
 target_link_libraries(${PROTO_API_LIB_NAME}
     PUBLIC
         ${PROTO_INTERNAL_LIB_NAME}
     PRIVATE
         ${Protobuf_LIBRARIES}
-        ${Protobuf_PROTOC_LIBRARIES}
-)
+        ${Protobuf_PROTOC_LIBRARIES})
 
-target_include_directories(${PROTO_API_LIB_NAME}
-    PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${Protobuf_INCLUDE_DIR}
-)
+target_include_directories(${PROTO_API_LIB_NAME} PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${Protobuf_INCLUDE_DIR})
 
-install(TARGETS ${PROTO_API_LIB_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS ${PROTO_API_LIB_NAME}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protos
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 # -----------------------------------------------------------
-# Make and install the example apps
+# Make and install the example runner
 
-add_subdirectory(examples)
+set(RUNNER_NAME "main")
+
+add_executable(${RUNNER_NAME} main.cc)
+
+target_link_libraries(${RUNNER_NAME} PUBLIC
+    ${Protobuf_LIBRARIES}
+    ${PROTO_INTERNAL_LIB_NAME}
+    ${PROTO_API_LIB_NAME})
+
+install(TARGETS ${RUNNER_NAME}
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+
