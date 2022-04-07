@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package myproj.api;
+
+import "google/protobuf/struct.proto";
+import "protos/options/options.proto";
+
+message Woz {
+  int32 id = 1;
+  float min_depth = 2;
+  float max_depth = 3;
+};
+
+message Baz {
+  int32 id = 1;
+  string unique_id = 2;
+  string name = 3;
+  Woz woz = 4;
+  google.protobuf.Struct settings = 5;
+};

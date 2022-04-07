@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package myproj.api;
+
+import "protos/options/options.proto";
+
+message Platform {
+  option (myproj.widget_options) = {
+    title: "Platform",
+    description: "Platform descriotion...."
+  };
+
+  float min_depth = 1 [(myproj.control_options) = {
+    name: "min_depth",
+    label: "Min Depth",
+    description: "Enter the minimum platform depth",
+    fieldType: "SpinBox",
+  }];
+
+  float max_depth = 2 [(myproj.control_options) = {
+    name: "max_depth",
+    label: "Max Depth",
+    description: "Enter the maximum platform depth",
+    fieldType: "SpinBox",
+  }];
+
+  float min_altitude = 3 [(myproj.control_options) = {
+    name: "min_altitude",
+    label: "Min Altitude",
+    description: "Enter the minimum platform altitude",
+    fieldType: "SpinBox",
+  }];
+
+  float max_altitude = 4 [(myproj.control_options) = {
+    name: "max_altitude",
+    label: "Max Altitude",
+    description: "Enter the maximum platform altitude",
+    fieldType: "SpinBox",
+  }];
+
+  repeated string properties = 5 [(myproj.control_options) = {
+    name: "properties",
+    label: "Properties",
+    description: "Some properties...",
+    fieldType: "List",
+  }];
+}

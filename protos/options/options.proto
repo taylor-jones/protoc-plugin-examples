@@ -5,6 +5,59 @@ package myproj;
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/struct.proto";
 
+// ==========================================================================
+// Custom Options
+// --------------------------------------------------------------------------
+// Custom options extend the built-in messages defined in
+// `google/protobuf/descriptor.proto`. Custom options can be defined for every
+// kind of construct in the Protocol Buffers language, including:
+//  - EnumOptions
+//  - EnumValueOptions
+//  - FieldOptions
+//  - FileOptions
+//  - MessageOptions
+//  - MethodOptions
+//  - OneOfOptions
+//  - ServiceOptions
+// --------------------------------------------------------------------------
+// See: https://developers.google.com/protocol-buffers/docs/proto#customoptions
+// ==========================================================================
+
+// ==========================================================================
+// Message Options
+// --------------------------------------------------------------------------
+// google.protobuf.MessageOptions may be extended using direct fields or
+// by referencing other message types.
+// ==========================================================================
+
+message WidgetOptions {
+  string title = 1;
+  string description = 2;
+  // repeated ControlOptions controls = 3;
+};
+
+extend google.protobuf.MessageOptions {
+  optional WidgetOptions widget_options = 50001;
+};
+
+
+// ==========================================================================
+// Field Options
+// --------------------------------------------------------------------------
+// google.protobuf.FieldOptions may be extended using direct fields or by
+// referencing other message types.
+// ==========================================================================
+
+message ControlOptions {
+  string name = 1;
+  string label = 2;
+  string description = 3;
+  string fieldType = 4;
+  string placeholderText = 5;
+  string initialValue = 6;
+  google.protobuf.Struct options = 7;
+};
+
 extend google.protobuf.FieldOptions {
-  optional google.protobuf.Value field_default = 50001;
-}
+  optional ControlOptions control_options = 50001;
+};

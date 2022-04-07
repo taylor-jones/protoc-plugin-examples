@@ -1,4 +1,4 @@
-set(PLUGIN_PROTOC_GEN_NAME "defaults")
+set(PLUGIN_PROTOC_GEN_NAME "qml-json")
 set(PLUGIN_TARGET_NAME "protoc-gen-${PLUGIN_PROTOC_GEN_NAME}")
 
 add_executable(${PLUGIN_TARGET_NAME}

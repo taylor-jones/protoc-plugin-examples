@@ -1,0 +1,12 @@
+{
+    "id": 1,
+    "unique_id": "my-baz",
+    "name": "Valid Baz with settings",
+    "woz": {
+        "id": 7
+    },
+    "settings": {
+        "foo": "bar",
+        "another": 56
+    }
+}

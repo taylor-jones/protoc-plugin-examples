@@ -4,17 +4,18 @@ package myproj.api;
 
 import "protos/options/options.proto";
 
-message Foo {
+// Used to demonstrate processing when minimal fieldType specifications are set.
+
+message Bar {
   option (myproj.widget_options) = {
-    title: "Foo",
-    description: "Here's my foo description."
+    title: "Bar",
+    description: "Here's my bar description."
   };
 
   string login = 1 [(myproj.control_options) = {
     name: "login",
     label: "Login",
     description: "Enter your login",
-    fieldType: "TextField",
     placeholderText: "Enter your login...",
   }];
 
@@ -22,7 +23,6 @@ message Foo {
     name: "email",
     label: "Email",
     description: "The Email is required",
-    fieldType: "TextField",
     placeholderText: "Enter your Email...",
   }];
 

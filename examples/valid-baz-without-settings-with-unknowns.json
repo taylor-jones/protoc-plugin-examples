@@ -1,0 +1,7 @@
+{
+    "id": 1,
+    "unique_id": "my-baz",
+    "name": "Valid Baz without settings with unknowns",
+    "other": "ok",
+    "items": [ 1, 2, 3]
+}

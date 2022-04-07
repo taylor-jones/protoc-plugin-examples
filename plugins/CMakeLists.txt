@@ -1,1 +1,1 @@
-add_subdirectory(protoc-gen-defaults)
+add_subdirectory(protoc-gen-qml-json)

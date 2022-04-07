@@ -1,0 +1,9 @@
+{
+    "id": 1,
+    "unique_id": "my-baz",
+    "name": "Baz with invalid Woz",
+    "woz": {
+        "id": 7,
+        "woz-foo": "this is an unknown"
+    }
+}

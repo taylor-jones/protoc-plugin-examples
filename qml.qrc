@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qtquickcontrols2.conf</file>
+
+        <file>FormBuilderPage.qml</file>
+        <file>FieldTemplate.qml</file>
+        <file>main.qml</file>
+
+        <file>inputs/Checkbox.qml</file>
+        <file>inputs/ComboBox.qml</file>
+        <file>inputs/List.qml</file>
+        <file>inputs/Password.qml</file>
+        <file>inputs/Radio.qml</file>
+        <file>inputs/SpinBox.qml</file>
+        <file>inputs/TextArea.qml</file>
+        <file>inputs/TextField.qml</file>
+
+        <file>assets/up-arrow.png</file>
+        <file>assets/down-arrow.png</file>
+        <file>assets/add.png</file>
+        <file>assets/minus.png</file>
+    </qresource>
+</RCC>
